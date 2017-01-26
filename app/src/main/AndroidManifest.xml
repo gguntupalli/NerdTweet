@@ -35,6 +35,11 @@
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
+        <provider
+            android:authorities="com.bignerdranch.android.nerdtweet.provider"
+            android:name=".contentprovider.TweetContentProvider"
+            android:exported="false"
+            android:syncable="true" />
     </application>
 
 </manifest>

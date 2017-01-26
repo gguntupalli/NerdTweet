@@ -7,6 +7,8 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,7 +22,9 @@ import android.widget.TextView;
 
 import com.bignerdranch.android.nerdtweet.R;
 import com.bignerdranch.android.nerdtweet.account.Authenticator;
+import com.bignerdranch.android.nerdtweet.contentprovider.DatabaseContract;
 import com.bignerdranch.android.nerdtweet.model.Tweet;
+import com.bignerdranch.android.nerdtweet.model.User;
 import com.bumptech.glide.Glide;
 
 import java.io.IOException;
@@ -53,6 +57,42 @@ public class TweetListFragment extends Fragment {
     public void onStart() {
         super.onStart();
         fetchAccessToken();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        clearDb();
+        testInsert();
+        testQuery();
+    }
+    private void clearDb() {
+        getContext().getContentResolver()
+                .delete(DatabaseContract.User.CONTENT_URI, null, null);
+        getContext().getContentResolver()
+                .delete(DatabaseContract.Tweet.CONTENT_URI, null, null);
+    }
+
+    private void testInsert() {
+        User user = new User("server_id", "My screen name", "my photo url");
+        Tweet tweet = new Tweet("server_id", "My first tweet", 0, 0, user);
+        Uri userUri = getContext().getContentResolver()
+                .insert(DatabaseContract.User.CONTENT_URI, user.getContentValues());
+        Log.d(TAG, "Inserted user into uri: " + userUri);
+        Uri tweetUri = getContext().getContentResolver()
+                .insert(DatabaseContract.Tweet.CONTENT_URI, tweet.getContentValues());
+        Log.d(TAG, "Inserted tweet into uri: " + tweetUri);
+    }
+
+    private void testQuery() {
+        Cursor userCursor = getContext().getContentResolver()
+                .query(DatabaseContract.User.CONTENT_URI, null, null, null, null);
+        Log.d(TAG, "Have user cursor: " + userCursor);
+        userCursor.close();
+        Cursor tweetCursor = getContext().getContentResolver()
+                .query(DatabaseContract.Tweet.CONTENT_URI, null, null, null, null);
+        Log.d(TAG, "Have tweet cursor: " + tweetCursor);
+        tweetCursor.close();
     }
 
     private void fetchAccessToken() {
