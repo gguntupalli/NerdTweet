@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">NerdTweet</string>
+    <string name="account_name">com.bignerdranch.android.nerdtweet.USER_ACCOUNT</string>
+</resources>
