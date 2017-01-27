@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "10173370008",
+    "firebase_url": "https://nerdtweet-88552.firebaseio.com",
+    "project_id": "nerdtweet-88552",
+    "storage_bucket": "nerdtweet-88552.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:10173370008:android:9df25777fe8afa08",
+        "android_client_info": {
+          "package_name": "com.bignerdranch.android.nerdtweet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "10173370008-eo4p9i4kkgjrlc7o7du0fl90f8sk714q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bignerdranch.android.nerdtweet",
+            "certificate_hash": "9364D7882B68EFC497D78FA03C862BBBD607D452"
+          }
+        },
+        {
+          "client_id": "10173370008-eubdv6rl5g6cnud04vo19ttphnqa81v7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCP8TJ4OEpdOPJm1SvNVht-Pzhfr-ffewE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "10173370008-eubdv6rl5g6cnud04vo19ttphnqa81v7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

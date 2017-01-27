@@ -8,11 +8,13 @@ import android.accounts.AccountManagerFuture;
 import android.content.ContentResolver;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,9 +26,11 @@ import com.bignerdranch.android.nerdtweet.account.Authenticator;
 import com.bignerdranch.android.nerdtweet.contentprovider.DatabaseContract;
 import com.bignerdranch.android.nerdtweet.contentprovider.TweetCursorWrapper;
 import com.bignerdranch.android.nerdtweet.contentprovider.UserCursorWrapper;
+import com.bignerdranch.android.nerdtweet.model.PreferenceStore;
 import com.bignerdranch.android.nerdtweet.model.Tweet;
 import com.bignerdranch.android.nerdtweet.model.User;
 import com.bumptech.glide.Glide;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +45,7 @@ public class TweetListFragment extends Fragment {
     private Account mAccount;
     private RecyclerView mRecyclerView;
     private TweetAdapter mTweetAdapter;
+    private boolean mSyncingPeriodically;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -63,8 +68,10 @@ public class TweetListFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        ContentResolver.removePeriodicSync(
-                mAccount, DatabaseContract.AUTHORITY, Bundle.EMPTY);
+        if(mSyncingPeriodically) {
+            ContentResolver.removePeriodicSync(
+                    mAccount, DatabaseContract.AUTHORITY, Bundle.EMPTY);
+        }
     }
 
     private HashMap<String, User> getUserMap() {
@@ -119,9 +126,7 @@ public class TweetListFragment extends Fragment {
                     @Override
                     public void run(AccountManagerFuture<Bundle> future) {
                         initRecyclerView();
-                        ContentResolver.setIsSyncable(mAccount, DatabaseContract.AUTHORITY, 1);
-                        ContentResolver.setSyncAutomatically(mAccount, DatabaseContract.AUTHORITY, true);
-                        ContentResolver.addPeriodicSync(mAccount, DatabaseContract.AUTHORITY, Bundle.EMPTY, 30);
+                        setupFirebaseMessaging();
                         getContext().getContentResolver().registerContentObserver(
                                 DatabaseContract.Tweet.CONTENT_URI, true, mContentObserver );
                     }
@@ -129,6 +134,43 @@ public class TweetListFragment extends Fragment {
                 }, null);
     }
 
+    private void setupFirebaseMessaging() {
+        PreferenceStore preferenceStore = PreferenceStore.get(getContext());
+        String currentToken = preferenceStore.getFirebaseToken();
+        if(currentToken == null) {
+            new FirebaseRegistrationTask().execute();
+        } else {
+            Log.d(TAG, "Have current token: " + currentToken);
+        }
+    }
+
+    private class FirebaseRegistrationTask extends AsyncTask<Void, Void, String> {
+        @Override
+        protected String doInBackground(Void... voids) {
+            if (getContext() == null) {
+                return null;
+            }
+
+            return FirebaseInstanceId.getInstance().getToken();
+        }
+        @Override
+        protected void onPostExecute(String token) {
+            if (token == null) {
+                setupPeriodicSync();
+                return; }
+            Log.d(TAG, "Have new token: " + token);
+            PreferenceStore.get(getContext()).setFirebaseToken(token);
+        }
+    }
+
+    private void setupPeriodicSync() {
+        mSyncingPeriodically = true;
+        ContentResolver.setIsSyncable(mAccount, DatabaseContract.AUTHORITY, 1);
+        ContentResolver.setSyncAutomatically(
+                mAccount, DatabaseContract.AUTHORITY, true);
+        ContentResolver.addPeriodicSync(
+                mAccount, DatabaseContract.AUTHORITY, Bundle.EMPTY, 30);
+    }
 
     private class TweetAdapter extends RecyclerView.Adapter<TweetHolder> {
         private List<Tweet> mTweetList;
